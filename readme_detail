@@ -1,0 +1,288 @@
+Samozrejme, môžeme pokračovať v našej predošlej konverzácii o hre pre tvoju dcéru. Začnime s vývojom na Windows počítači a neskôr môžeme hru preniesť na iPad.
+
+Návrh riešenia pre Windows
+Pre začiatok navrhujem použiť Pygame, čo je populárna knižnica pre vývoj 2D hier v Pythone. Pygame je vhodná na vývoj hier pre Windows a je ideálna pre učenie sa základov herného vývoja.
+
+Kroky na začatie vývoja hry:
+1. Inštalácia potrebných nástrojov
+Python 3: Uisti sa, že máš nainštalovaný Python 3. Ak nie, môžeš si ho stiahnuť z python.org.
+
+Pygame: Nainštaluj Pygame pomocou pip:
+
+bash
+Copy code
+pip install pygame
+2. Príprava grafiky
+Obrázky bábiky: Priprav základný obrázok bábiky (s podprsenkou a nohavičkami). Môžete ho nakresliť spoločne s dcérou a naskenovať ho alebo vytvoriť v grafickom programe.
+Oblečenie a doplnky: Priprav obrázky pre jednotlivé položky oblečenia, účesy, farby rúžov a lakov na nechty.
+3. Štruktúra projektu
+Vytvor si priečinok pre projekt, napríklad DressUpGame, a doň ulož všetky obrázky a Python súbory.
+
+4. Implementácia základného okna s Pygame
+Vytvor nový Python súbor dress_up_game.py a začni s jednoduchým oknom:
+
+python
+Copy code
+import pygame
+import sys
+
+pygame.init()
+
+# Nastavenie veľkosti okna
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Dress Up Game")
+
+# Hlavný herný cyklus
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    # Vyplnenie obrazovky bielou farbou
+    screen.fill((255, 255, 255))
+
+    # Aktualizácia obrazovky
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
+5. Vytvorenie tried podľa návrhu
+a) Trieda GameApp
+Táto trieda bude spravovať hlavnú slučku hry a inicializovať všetky ostatné komponenty.
+
+python
+Copy code
+# dress_up_game.py
+
+class GameApp:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Dress Up Game")
+        self.clock = pygame.time.Clock()
+        self.running = True
+
+        # Inicializácia bábiky a inventára
+        self.doll = Doll()
+        self.inventory = Inventory()
+
+    def run(self):
+        while self.running:
+            self.handle_events()
+            self.update()
+            self.draw()
+            self.clock.tick(60)  # Limit na 60 FPS
+
+        pygame.quit()
+        sys.exit()
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            # Tu budeš spracovávať kliknutia myšou a iné udalosti
+
+    def update(self):
+        # Aktualizácia stavu hry
+        pass
+
+    def draw(self):
+        self.screen.fill((255, 255, 255))
+        self.doll.draw(self.screen)
+        # Kreslenie GUI prvkov
+        pygame.display.flip()
+b) Trieda Doll
+Táto trieda bude reprezentovať bábiku a spravovať jej vzhľad.
+
+python
+Copy code
+# dress_up_game.py
+
+class Doll:
+    def __init__(self):
+        # Načítanie základného obrázku bábiky
+        self.base_image = pygame.image.load('images/doll_base.png').convert_alpha()
+        self.position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self.clothing = {}
+        self.hair_style = None
+        self.lip_color = None
+        self.nail_color = None
+
+    def draw(self, surface):
+        # Kreslenie základnej bábiky
+        rect = self.base_image.get_rect(center=self.position)
+        surface.blit(self.base_image, rect)
+
+        # Kreslenie oblečenia
+        for item in self.clothing.values():
+            item.draw(surface, self.position)
+
+        # Kreslenie účesu
+        if self.hair_style:
+            self.hair_style.draw(surface, self.position)
+
+        # Kreslenie rúžu a laku na nechty
+        # (Môžeš implementovať podľa potreby)
+
+    def change_clothing(self, category, item):
+        self.clothing[category] = item
+
+    def change_hair_style(self, hair_style):
+        self.hair_style = hair_style
+
+    def change_lip_color(self, color):
+        self.lip_color = color
+
+    def change_nail_color(self, color):
+        self.nail_color = color
+c) Trieda ClothingItem
+python
+Copy code
+# dress_up_game.py
+
+class ClothingItem:
+    def __init__(self, name, category, image_path):
+        self.name = name
+        self.category = category
+        self.image = pygame.image.load(image_path).convert_alpha()
+
+    def draw(self, surface, position):
+        rect = self.image.get_rect(center=position)
+        surface.blit(self.image, rect)
+d) Trieda Inventory
+Táto trieda bude obsahovať všetky dostupné položky oblečenia a účesov.
+
+python
+Copy code
+# dress_up_game.py
+
+class Inventory:
+    def __init__(self):
+        self.clothing_categories = {}
+        self.hair_styles = []
+        self.lip_colors = []
+        self.nail_colors = []
+
+        self.load_items()
+
+    def load_items(self):
+        # Načítanie oblečenia
+        self.clothing_categories['tops'] = [
+            ClothingItem('Blue T-Shirt', 'tops', 'images/blue_tshirt.png'),
+            ClothingItem('Red T-Shirt', 'tops', 'images/red_tshirt.png'),
+            # Pridaj ďalšie položky
+        ]
+        # Načítanie účesov
+        self.hair_styles = [
+            HairStyle('Ponytails', 'images/ponytails.png'),
+            HairStyle('Buns', 'images/buns.png'),
+            # Pridaj ďalšie účesy
+        ]
+        # Načítanie farieb rúžov a lakov na nechty
+        self.lip_colors = [(255, 0, 0), (255, 192, 203), (128, 0, 128)]  # Červená, ružová, fialová
+        self.nail_colors = [(255, 0, 0), (255, 192, 203), (128, 0, 128)]  # Môžeš pridať ďalšie farby
+
+    def get_category(self, name):
+        return self.clothing_categories.get(name, [])
+e) Trieda HairStyle
+python
+Copy code
+# dress_up_game.py
+
+class HairStyle:
+    def __init__(self, name, image_path):
+        self.name = name
+        self.image = pygame.image.load(image_path).convert_alpha()
+
+    def draw(self, surface, position):
+        rect = self.image.get_rect(center=position)
+        surface.blit(self.image, rect)
+6. Implementácia GUI prvkov
+Musíme vytvoriť interaktívne prvky, ktoré umožnia hráčovi meniť oblečenie, účesy a farby.
+
+a) Zoznam oblečenia napravo
+Vytvoríme triedu ClothingMenu, ktorá zobrazí kategórie oblečenia a umožní hráčovi vybrať si položku.
+python
+Copy code
+# dress_up_game.py
+
+class ClothingMenu:
+    def __init__(self, inventory, doll):
+        self.inventory = inventory
+        self.doll = doll
+        self.categories = list(inventory.clothing_categories.keys())
+        self.selected_category = self.categories[0]
+        self.items = self.inventory.get_category(self.selected_category)
+        self.visible = False
+
+    def draw(self, surface):
+        # Kreslí kategórie a položky
+        pass  # Implementuj kreslenie menu
+
+    def handle_event(self, event):
+        # Spracováva kliknutia a mení oblečenie bábiky
+        pass  # Implementuj interaktivitu
+b) Úpravy vlasov hore
+Vytvoríme triedu HairStyleMenu, ktorá umožní hráčovi vybrať účes.
+python
+Copy code
+# dress_up_game.py
+
+class HairStyleMenu:
+    def __init__(self, inventory, doll):
+        self.inventory = inventory
+        self.doll = doll
+        self.visible = False
+
+    def draw(self, surface):
+        # Kreslí dostupné účesy
+        pass
+
+    def handle_event(self, event):
+        # Spracováva výber účesu
+        pass
+c) Farby rúžov a lakov
+Podobne vytvoríme menu pre výber farieb.
+7. Spracovanie udalostí
+V metóde handle_events v triede GameApp budeme spracovávať kliknutia myšou.
+
+python
+Copy code
+def handle_events(self):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            self.running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            # Skontroluj, či bolo kliknuté na nejaký GUI prvok
+            # a zavolaj príslušnú metódu handle_event
+            # Napríklad:
+            # self.clothing_menu.handle_event(event)
+8. Implementácia kreslenia GUI
+V metóde draw v triede GameApp budeme kresliť všetky prvky.
+
+python
+Copy code
+def draw(self):
+    self.screen.fill((255, 255, 255))
+    self.doll.draw(self.screen)
+    # Kreslenie menu
+    # self.clothing_menu.draw(self.screen)
+    pygame.display.flip()
+Postupné pridávanie funkcií
+Začni s jednoduchou verziou, kde sa zobrazí bábika a môžeš na ňu kliknúť a meniť jej oblečenie. Potom postupne pridávaj ďalšie funkcie, ako je výber účesu, farby rúžu a laku na nechty.
+
+Testovanie na Windows
+Počas vývoja pravidelne testuj hru na svojom Windows počítači, aby si overil, že všetko funguje podľa očakávaní.
+
+Prenos na iPad
+Keď bude hra funkčná na Windows, môžeme uvažovať o jej prenose na iPad. Keďže Pygame nie je priamo kompatibilný s iOS, budeme musieť hru preportovať pomocou iného frameworku, napríklad Kivy, ktorý podporuje vývoj aplikácií pre iOS.
+
+Ďalšie tipy
+Ukladanie stavu hry: Môžeš pridať funkciu na uloženie aktuálneho vzhľadu bábiky, aby sa k nemu dcéra mohla vrátiť neskôr.
+Zábavné prvky: Pridaj možnosť meniť pozadie alebo pridať hudbu do hry.
+Interakcia s dcérou: Zapojiť dcéru do vývoja hry môže byť skvelý spôsob, ako stráviť čas spolu a podporiť jej kreativitu.
+Ak máš akékoľvek otázky alebo potrebuješ pomoc s konkrétnou časťou kódu, neváhaj sa opýtať. Rád ti pomôžem s ďalšími krokmi.
